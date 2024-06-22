@@ -11,10 +11,10 @@ import (
 	"github.com/juju/ratelimit"
 )
 
-func RateLimiterFiber(maxRequests int, duration time.Duration) fiber.Handler {
+func RateLimiterFiber(max_requests int, duration time.Duration) fiber.Handler {
 	// Create a rate limiter using the middleware
 	return limiter.New(limiter.Config{
-		Max:        maxRequests,
+		Max:        max_requests,
 		Expiration: duration,
 		KeyGenerator: func(context *fiber.Ctx) string {
 			// Use the request IP address as the key for rate limiting

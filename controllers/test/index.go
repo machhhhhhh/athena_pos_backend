@@ -139,16 +139,6 @@ func TestCreateGin(context *gin.Context) {
 	})
 }
 
-func GetUser() []models.User {
-	return ALL_USER
-}
-
-func CreateUser(body models.User) models.User {
-	body.UserID = len(ALL_USER) + 1
-	ALL_USER = append(ALL_USER, body)
-	return body
-}
-
 func GetPayloadLoginFiber(context *fiber.Ctx) error {
 
 	body := LoginRequest{
@@ -189,21 +179,14 @@ func GetPayloadLoginGin(context *gin.Context) {
 func LoginGin(context *gin.Context) {
 
 	// get body
-	body, err := GetBodyGin(context)
+	body, err, status_code := GetBodyGin(context)
 	if err != nil {
-		controllers.ErrorHandlerGin(context, http.StatusInternalServerError, err.Error(), "LoginGin | get body")
-		return
-	}
-
-	// validate body
-	body, err = validateBody(body)
-	if err != nil {
-		controllers.ErrorHandlerGin(context, http.StatusInternalServerError, err.Error(), "LoginGin | validate body")
+		controllers.ErrorHandlerGin(context, status_code, err.Error(), "LoginGin | get body")
 		return
 	}
 
 	// find user
-	user, err := FindUserByUsername(body.Username)
+	user, err := FindUser(0, body.Username)
 	if err != nil {
 		controllers.ErrorHandlerGin(context, http.StatusNotFound, err.Error(), "LoginGin | validate body")
 		return
@@ -243,18 +226,13 @@ func LoginGin(context *gin.Context) {
 
 func LoginFiber(context *fiber.Ctx) error {
 	// get body
-	body, err := GetBodyFiber(context)
+	body, err, status_code := GetBodyFiber(context)
 	if err != nil {
-		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | get body")
-	}
-	// validate body
-	body, err = validateBody(body)
-	if err != nil {
-		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | validate body")
+		return controllers.ErrorHandlerFiber(context, status_code, err.Error(), "LoginFiber | get body")
 	}
 
 	// find user
-	user, err := FindUserByUsername(body.Username)
+	user, err := FindUser(0, body.Username)
 	if err != nil {
 		return controllers.ErrorHandlerFiber(context, http.StatusNotFound, err.Error(), "LoginFiber | validate body")
 	}
