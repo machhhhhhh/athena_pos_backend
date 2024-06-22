@@ -1,0 +1,90 @@
+definitions:
+  ErrorResponse:
+    properties:
+      error:
+        type: string
+      error_section:
+        type: string
+    type: object
+  models.User:
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /test:
+    get:
+      consumes:
+      - application/json
+      description: test controller.
+      operationId: TestGetFiber
+      parameters:
+      - description: string valid
+        in: query
+        name: search
+        type: string
+      - description: int valid
+        in: query
+        name: limit
+        type: integer
+      - description: int valid
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully Retrieved Data
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "403":
+          description: Role Forbidden
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "429":
+          description: Rate Limit Exceeded
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Test Controller ....
+      tags:
+      - Test
+swagger: "2.0"
