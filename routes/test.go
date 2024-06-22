@@ -8,18 +8,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// TODO: from doc fiber cannot declare 2 router group from same parent path
+// TODO: Fiber uses method chaining directly on the router instance
+// TODO: Gin uses methods directly on the router group
 func InitTestFiberRoutes(route fiber.Router) {
 
-	public_router := route.Group("/test")
-	private_router := route.Group("/test").Use(middlewares.AuthenticateFiber())
+	router := route.Group("/test")
 
 	// Define routes
-	private_router.Get("/", testcontroller.TestGetFiber)
-	private_router.Post("/", testcontroller.TestCreateFiber)
+	router.Get("/", middlewares.AuthenticateFiber(), testcontroller.TestGetFiber)
+	router.Post("/", middlewares.AuthenticateFiber(), testcontroller.TestCreateFiber)
 
 	// test login route
-	public_router.Get("/get-payload/login", testcontroller.GetPayloadLoginFiber)
-	public_router.Post("/login", testcontroller.LoginFiber)
+	router.Get("/get-payload/login", testcontroller.GetPayloadLoginFiber)
+	router.Post("/login", testcontroller.LoginFiber)
 }
 
 func InitTestGinRoutes(route *gin.RouterGroup) {
