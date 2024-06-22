@@ -16,12 +16,12 @@ func RateLimiterFiber(maxRequests int, duration time.Duration) fiber.Handler {
 	return limiter.New(limiter.Config{
 		Max:        maxRequests,
 		Expiration: duration,
-		KeyGenerator: func(c *fiber.Ctx) string {
+		KeyGenerator: func(context *fiber.Ctx) string {
 			// Use the request IP address as the key for rate limiting
-			return c.IP()
+			return context.IP()
 		},
-		LimitReached: func(c *fiber.Ctx) error {
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+		LimitReached: func(context *fiber.Ctx) error {
+			return context.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
 				"error":         "Rate limit exceeded",
 				"error_section": "RateLimiter",
 			})
@@ -33,14 +33,14 @@ func RateLimiterGin(max_requests int, duration time.Duration) gin.HandlerFunc {
 	// Create a rate limiter using token bucket algorithm
 	limiter := ratelimit.NewBucketWithQuantum(duration, int64(max_requests), int64(max_requests))
 
-	return func(c *gin.Context) {
+	return func(context *gin.Context) {
 		// Check if the request IP address exceeds the rate limit
 		if limiter.TakeAvailable(1) < 1 {
-			controllers.ErrorHandlerGin(c, http.StatusTooManyRequests, "Rate limit exceeded", "RateLimiter")
-			c.Abort()
+			controllers.ErrorHandlerGin(context, http.StatusTooManyRequests, "Rate limit exceeded", "RateLimiter")
+			context.Abort()
 			return
 		}
 
-		c.Next()
+		context.Next()
 	}
 }

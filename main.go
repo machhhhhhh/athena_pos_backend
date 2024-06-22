@@ -34,8 +34,8 @@ func main() {
 	// TODO: have to command => go middlewares.FocusUserRepresentExpire()
 
 	// Setup routes
-	SetupGinRoutes()
-	// SetupFiberRoutes()
+	// SetupGinRoutes()
+	SetupFiberRoutes()
 
 }
 

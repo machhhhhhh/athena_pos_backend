@@ -19,8 +19,8 @@ type ErrorResponse struct {
 	ErrorSection string `json:"error_section,omitempty"`
 } // @name ErrorResponse
 
-func ErrorHandlerFiber(c *fiber.Ctx, error_status int, error_message string, error_section string) {
-	c.Status(error_status).JSON(ErrorResponse{
+func ErrorHandlerFiber(context *fiber.Ctx, error_status int, error_message string, error_section string) error {
+	return context.Status(error_status).JSON(ErrorResponse{
 		Error:        error_message,
 		ErrorSection: error_section,
 	})

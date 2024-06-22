@@ -12,18 +12,18 @@ import (
 )
 
 func AuthenticateGin() gin.HandlerFunc {
-	return gin.HandlerFunc(func(c *gin.Context) {
-		token_header := c.GetHeader("Authorization")
+	return gin.HandlerFunc(func(context *gin.Context) {
+		token_header := context.GetHeader("Authorization")
 
 		if token_header == "" {
-			controllers.ErrorHandlerGin(c, http.StatusUnauthorized, "Unauthorized.", "AuthenticateGin | validate api header")
-			defer c.AbortWithStatus(http.StatusUnauthorized)
+			controllers.ErrorHandlerGin(context, http.StatusUnauthorized, "Unauthorized.", "AuthenticateGin | validate api header")
+			defer context.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		if !strings.Contains(token_header, "Bearer") {
-			controllers.ErrorHandlerGin(c, http.StatusUnauthorized, "Please use Authorization Bearer.", "AuthenticateGin | validate api header")
-			defer c.AbortWithStatus(http.StatusUnauthorized)
+			controllers.ErrorHandlerGin(context, http.StatusUnauthorized, "Please use Authorization Bearer.", "AuthenticateGin | validate api header")
+			defer context.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
@@ -31,57 +31,57 @@ func AuthenticateGin() gin.HandlerFunc {
 
 		aes_user, err := services.AESDecrypted(access_token)
 		if err != nil {
-			controllers.ErrorHandlerGin(c, http.StatusUnauthorized, err.Error(), "AuthenticateGin | decrypt token")
-			defer c.AbortWithStatus(http.StatusUnauthorized)
+			controllers.ErrorHandlerGin(context, http.StatusUnauthorized, err.Error(), "AuthenticateGin | decrypt token")
+			defer context.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		user, err := testcontroller.FindUserByID(aes_user.UserID)
 		if err != nil {
-			controllers.ErrorHandlerGin(c, http.StatusUnauthorized, err.Error(), "AuthenticateGin | find user")
-			defer c.AbortWithStatus(http.StatusUnauthorized)
+			controllers.ErrorHandlerGin(context, http.StatusUnauthorized, err.Error(), "AuthenticateGin | find user")
+			defer context.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 
 		// TODO: hide password => if connect DB query to omit it
 		user.Password = ""
 
-		c.Set("user", user)
-		c.Next()
+		context.Set("user", user)
+		context.Next()
 	})
 }
 
 func AuthenticateFiber() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		tokenHeader := c.Get("Authorization")
+	return func(context *fiber.Ctx) error {
+		tokenHeader := context.Get("Authorization")
 
 		if tokenHeader == "" {
-			controllers.ErrorHandlerFiber(c, http.StatusUnauthorized, "Unauthorized.", "AuthenticateFiber | validate api header")
-			return c.SendStatus(http.StatusUnauthorized)
+			controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, "Unauthorized.", "AuthenticateFiber | validate api header")
+			return context.SendStatus(http.StatusUnauthorized)
 		}
 
 		if !strings.Contains(tokenHeader, "Bearer") {
-			controllers.ErrorHandlerFiber(c, http.StatusUnauthorized, "Please use Authorization Bearer.", "AuthenticateFiber | validate api header")
-			return c.SendStatus(http.StatusUnauthorized)
+			controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, "Please use Authorization Bearer.", "AuthenticateFiber | validate api header")
+			return context.SendStatus(http.StatusUnauthorized)
 		}
 
 		accessToken := strings.TrimSpace(strings.Replace(tokenHeader, "Bearer", "", 1))
 
 		aesUser, err := services.AESDecrypted(accessToken)
 		if err != nil {
-			controllers.ErrorHandlerFiber(c, http.StatusUnauthorized, err.Error(), "AuthenticateFiber | decrypt token")
-			return c.SendStatus(http.StatusUnauthorized)
+			controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, err.Error(), "AuthenticateFiber | decrypt token")
+			return context.SendStatus(http.StatusUnauthorized)
 		}
 
 		user, err := testcontroller.FindUserByID(aesUser.UserID)
 		if err != nil {
-			controllers.ErrorHandlerFiber(c, http.StatusUnauthorized, err.Error(), "AuthenticateFiber | find user")
-			return c.SendStatus(http.StatusUnauthorized)
+			controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, err.Error(), "AuthenticateFiber | find user")
+			return context.SendStatus(http.StatusUnauthorized)
 		}
 		// TODO: hide password => if connect DB query to omit it
 		user.Password = ""
 
-		c.Locals("user", user)
-		return c.Next()
+		context.Locals("user", user)
+		return context.Next()
 	}
 }

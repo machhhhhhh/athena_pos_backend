@@ -54,8 +54,7 @@ func TestGetFiber(context *fiber.Ctx) error {
 
 	userMe, err := services.GetContextUserFiber(context)
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "TestGetFiber | get user from token")
-		return err
+		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "TestGetFiber | get user from token")
 	}
 
 	fmt.Println("===========")
@@ -73,8 +72,7 @@ func TestCreateFiber(context *fiber.Ctx) error {
 
 	userMe, err := services.GetContextUserFiber(context)
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "TestCreateFiber | get user from token")
-		return err
+		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "TestCreateFiber | get user from token")
 	}
 
 	fmt.Println("===========")
@@ -160,9 +158,9 @@ func GetPayloadLoginFiber(context *fiber.Ctx) error {
 
 	token, err := services.GenerateTokenJWT(body)
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "GetPayload | generate token")
-		return nil
+		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "GetPayload | generate token")
 	}
+
 	return context.Status(fiber.StatusOK).JSON(controllers.SuccessResponse{
 		Message:  "Get Payload Login",
 		Response: token,
@@ -247,48 +245,41 @@ func LoginFiber(context *fiber.Ctx) error {
 	// get body
 	body, err := GetBodyFiber(context)
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | get body")
-		return nil
+		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | get body")
 	}
 	// validate body
 	body, err = validateBody(body)
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | validate body")
-		return nil
+		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | validate body")
 	}
 
 	// find user
 	user, err := FindUserByUsername(body.Username)
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusNotFound, err.Error(), "LoginFiber | validate body")
-		return nil
+		return controllers.ErrorHandlerFiber(context, http.StatusNotFound, err.Error(), "LoginFiber | validate body")
 	}
 
 	// TODO: this is in Test Mode => devel for test currently
 	argon := argon2.DefaultConfig()
 	user_password, err := argon.HashEncoded([]byte(user.Password))
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | validate body")
-		return nil
+		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | validate body")
 	}
 
 	// check the hash password
 	ok, err := argon2.VerifyEncoded([]byte(body.Password), []byte(user_password))
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | check Argon")
-		return nil
+		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | check Argon")
 	}
 
 	if !ok {
-		controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, "Incorrect Password", "LoginFiber | compare new password with old password")
-		return nil
+		return controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, "Incorrect Password", "LoginFiber | compare new password with old password")
 	}
 
 	// response for access_token
 	access_token, err := services.AESEncrypted(&services.ObjectAES{UserID: user.UserID})
 	if err != nil {
-		controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | encrpt access_token")
-		return nil
+		return controllers.ErrorHandlerFiber(context, http.StatusInternalServerError, err.Error(), "LoginFiber | encrpt access_token")
 	}
 
 	return context.Status(fiber.StatusOK).JSON(controllers.SuccessResponse{
