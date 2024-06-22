@@ -19,7 +19,7 @@ func ValidateHTTPMethodGin() gin.HandlerFunc {
 
 		method := context.Request.Method
 
-		if method != http.MethodPost {
+		if method != http.MethodPost && method != http.MethodPatch && method != http.MethodPut {
 			context.Next()
 			return
 		}
