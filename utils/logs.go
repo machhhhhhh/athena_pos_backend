@@ -24,8 +24,8 @@ func HeadersToString(headers http.Header) string {
 
 func BodyToString(body interface{}) string {
 	if body != nil {
-		jsonBytes, _ := json.Marshal(body)
-		return string(jsonBytes)
+		json_bytes, _ := json.Marshal(body)
+		return string(json_bytes)
 	}
 	return ""
 }

@@ -220,7 +220,9 @@ func LoginGin(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, controllers.SuccessResponse{
-		Response: access_token,
+		Response: LoginResponse{
+			AccessToken: access_token,
+		},
 	})
 }
 
@@ -261,6 +263,8 @@ func LoginFiber(context *fiber.Ctx) error {
 	}
 
 	return context.Status(fiber.StatusOK).JSON(controllers.SuccessResponse{
-		Response: access_token,
+		Response: LoginResponse{
+			AccessToken: access_token,
+		},
 	})
 }

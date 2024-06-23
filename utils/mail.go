@@ -96,10 +96,10 @@ func GetEmailTemplate(file_name string) *template.Template {
 	}
 
 	// get file path
-	rootPath := fmt.Sprintf(strings.Replace(root, `\`, "/", -1) + "/templates/" + file_name + ".html")
+	root_path := fmt.Sprintf(strings.Replace(root, `\`, "/", -1) + "/templates/" + file_name + ".html")
 
 	//parse file from directory.
-	tmpl, err := template.ParseFiles(rootPath)
+	tmpl, err := template.ParseFiles(root_path)
 	if err != nil {
 		panic(err)
 	}

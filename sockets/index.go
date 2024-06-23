@@ -18,10 +18,8 @@ func SetupSocket(socket_port string) {
 	// TODO: Add Options here
 	var opts *socket.ServerOptions = socket.DefaultServerOptions()
 
-	io := socket.NewServer(nil, opts)
-
 	// rotues
-	setupRoutes(io)
+	io := setupRoutes(opts)
 
 	// Set up the HTTP server for Socket.IO
 	// TODO: can create req,res and wrap to context here (need to read more doc if want to parse service_controller here !!!)
@@ -98,11 +96,15 @@ func setupSocketDefaultRoute(io *socket.Server) {
 	})
 }
 
-func setupRoutes(io *socket.Server) {
+func setupRoutes(opts *socket.ServerOptions) *socket.Server {
 
-	// TODO: setting the base route
+	io := socket.NewServer(nil, opts)
+
+	// Root Path
 	setupSocketDefaultRoute(io)
 
-	// all socket routes here
+	// Router
 	io.Of("/test", TestSocketRoute)
+
+	return io
 }

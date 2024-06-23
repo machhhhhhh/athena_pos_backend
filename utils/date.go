@@ -7,11 +7,11 @@ import (
 
 func GetCurentYear() string {
 	// Get the current date and time
-	currentTime := time.Now()
+	current_time := time.Now()
 
 	// Extract the year from the current date
-	currentYear := currentTime.Year()
+	current_year := current_time.Year()
 
 	// Convert the year to a string using strconv.Itoa()
-	return strconv.Itoa(currentYear)
+	return strconv.Itoa(current_year)
 }
