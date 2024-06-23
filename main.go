@@ -3,7 +3,7 @@ package main
 import (
 	"athena-pos-backend/middlewares"
 	"athena-pos-backend/routes"
-	socket_helper "athena-pos-backend/sockets"
+	socket_service "athena-pos-backend/sockets"
 	service_usb "athena-pos-backend/usb"
 	"fmt"
 	"log"
@@ -90,7 +90,7 @@ func SetupGinRoutes() {
 	}()
 
 	// Socket move socket to last section
-	socket_helper.SetupSocket(socket_port)
+	socket_service.SetupSocket(socket_port)
 
 }
 
@@ -156,7 +156,7 @@ func SetupFiberRoutes() {
 	}()
 
 	// Socket move socket to last section
-	socket_helper.SetupSocket(socket_port)
+	socket_service.SetupSocket(socket_port)
 }
 
 func SetUpAPIFiber(app *fiber.App) {

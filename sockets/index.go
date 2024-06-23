@@ -1,6 +1,8 @@
-package socket_helper
+package socket_service
 
 import (
+	socket_test_route "athena-pos-backend/sockets/test"
+	"athena-pos-backend/utils"
 	"fmt"
 	"log"
 	"net/http"
@@ -72,24 +74,9 @@ func handleShutdown(io *socket.Server) {
 	os.Exit(0)
 }
 
-func getSocketClient(clients ...any) *socket.Socket {
-	if len(clients) == 0 || clients == nil {
-		return nil
-	}
-	client := clients[0].(*socket.Socket)
-
-	fmt.Println(client.Id(), "had connected.")
-
-	client.On("disconnect", func(...any) {
-		fmt.Println(client.Id(), "had disconnected.")
-	})
-
-	return client
-}
-
 func setupSocketDefaultRoute(io *socket.Server) {
 	io.Of("/", func(clients ...any) {
-		client := getSocketClient(clients...)
+		client := utils.GetSocketClient(clients...)
 		if client == nil {
 			return
 		}
@@ -104,7 +91,7 @@ func setupRoutes(opts *socket.ServerOptions) *socket.Server {
 	setupSocketDefaultRoute(io)
 
 	// Router
-	io.Of("/test", TestSocketRoute)
+	io.Of("/test", socket_test_route.TestSocketRoute)
 
 	return io
 }
