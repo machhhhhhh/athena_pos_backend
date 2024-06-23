@@ -1,12 +1,16 @@
-package socket_helper
+package socket_service
 
 import (
+	socket_test_route "athena-pos-backend/sockets/test"
+	"athena-pos-backend/utils"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/zishang520/socket.io/v2/socket"
 )
@@ -21,75 +25,56 @@ func SetupSocket(socket_port string) {
 	// rotues
 	io := setupRoutes(opts)
 
-	// Set up the HTTP server for Socket.IO
-	// TODO: can create req,res and wrap to context here (need to read more doc if want to parse service_controller here !!!)
-	go func() {
-		mux := http.NewServeMux()
-		mux.Handle("/athena/", io.ServeHandler(opts))
+	mux := http.NewServeMux()
+	mux.Handle("/athena/", io.ServeHandler(opts))
 
+	server := &http.Server{
+		Addr:    ":" + socket_port,
+		Handler: mux,
+	}
+
+	// Run the server in a goroutine
+	go func() {
 		fmt.Println("Socket Listening on port:", socket_port)
-		if err := http.ListenAndServe(":"+socket_port, mux); err != nil {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Error starting Socket.IO server: %v", err)
 		}
 	}()
 
-	exit := make(chan struct{})
-	change_signal := make(chan os.Signal)
-
-	signal.Notify(change_signal, os.Interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
-	go func() {
-		for socket := range change_signal {
-			switch socket {
-			case os.Interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-				close(exit)
-				return
-			}
-		}
-	}()
-
-	fmt.Println("Successfully Connected Socket")
-
-	// grateful shutdown
-	handleShutdown(io)
+	// Handle shutdown signals
+	handleShutdown(server, io)
 
 }
 
-func handleShutdown(io *socket.Server) {
+func handleShutdown(server *http.Server, io *socket.Server) {
 
 	exit := make(chan os.Signal, 1)
-	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(exit, os.Interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-	<-exit // Wait for a SIGINT or SIGTERM signal
+	<-exit
 	log.Println("Shutting down...")
 
+	context, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Gracefully shut down the HTTP server
+	if err := server.Shutdown(context); err != nil {
+		log.Fatalf("HTTP Server Shutdown Failed: %v", err)
+	}
 	// Cleanly close socket server
 	io.Close(func(err error) {
 		if err != nil {
 			log.Fatalf("Error Closing Socket.IO Server: " + err.Error())
 		}
 	})
+
+	log.Println("Server shut down gracefully.")
 	os.Exit(0)
-}
-
-func getSocketClient(clients ...any) *socket.Socket {
-	if len(clients) == 0 || clients == nil {
-		return nil
-	}
-	client := clients[0].(*socket.Socket)
-
-	fmt.Println(client.Id(), "had connected.")
-
-	client.On("disconnect", func(...any) {
-		fmt.Println(client.Id(), "had disconnected.")
-	})
-
-	return client
 }
 
 func setupSocketDefaultRoute(io *socket.Server) {
 	io.Of("/", func(clients ...any) {
-		client := getSocketClient(clients...)
+		client := utils.GetSocketClient(clients...)
 		if client == nil {
 			return
 		}
@@ -104,7 +89,7 @@ func setupRoutes(opts *socket.ServerOptions) *socket.Server {
 	setupSocketDefaultRoute(io)
 
 	// Router
-	io.Of("/test", TestSocketRoute)
+	io.Of("/test", socket_test_route.TestSocketRoute)
 
 	return io
 }

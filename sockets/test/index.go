@@ -1,9 +1,12 @@
-package socket_helper
+package socket_test_route
 
-import "fmt"
+import (
+	"athena-pos-backend/utils"
+	"fmt"
+)
 
 func TestSocketRoute(clients ...any) {
-	client := getSocketClient(clients...)
+	client := utils.GetSocketClient(clients...)
 
 	client.On("athena", func(messages ...any) {
 		if len(messages) == 0 {
