@@ -73,24 +73,18 @@ func ValidateHTTPMethodFiber() fiber.Handler {
 		// binding JSON
 		if err := context.BodyParser(&body); err != nil {
 			if _, ok := err.(*json.UnmarshalTypeError); ok {
-				// Handle type mismatch error
-				controllers.ErrorHandlerFiber(context, http.StatusBadRequest, "Invalid JSON. Payload must be a string.", "ValidateHTTPMethodFiber | check type json")
-				return context.SendStatus(http.StatusBadRequest)
+				return controllers.ErrorHandlerFiber(context, http.StatusBadRequest, "Invalid JSON. Payload must be a string.", "ValidateHTTPMethodFiber | check type json")
 			}
-
-			controllers.ErrorHandlerFiber(context, http.StatusBadRequest, err.Error(), "ValidateHTTPMethodFiber | BodyParser")
-			return context.SendStatus(http.StatusBadRequest)
+			return controllers.ErrorHandlerFiber(context, http.StatusBadRequest, err.Error(), "ValidateHTTPMethodFiber | BodyParser")
 		}
 
 		if body.Payload == "" {
-			controllers.ErrorHandlerFiber(context, http.StatusBadRequest, "Empty Payload is not allowed", "ValidateHTTPMethodFiber | validate payload")
-			return context.SendStatus(http.StatusBadRequest)
+			return controllers.ErrorHandlerFiber(context, http.StatusBadRequest, "Empty Payload is not allowed", "ValidateHTTPMethodFiber | validate payload")
 		}
 
 		claims, err, statusCode := services.ReadTokenJWT(body.Payload)
 		if err != nil {
-			controllers.ErrorHandlerFiber(context, statusCode, err.Error(), "ValidateHTTPMethodFiber | read jwt")
-			return context.SendStatus(statusCode)
+			return controllers.ErrorHandlerFiber(context, statusCode, err.Error(), "ValidateHTTPMethodFiber | read jwt")
 		}
 
 		// set to context

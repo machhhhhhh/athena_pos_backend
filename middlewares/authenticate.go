@@ -36,7 +36,7 @@ func AuthenticateGin() gin.HandlerFunc {
 			return
 		}
 
-		user, err := testcontroller.FindUserByID(aes_user.UserID)
+		user, err := testcontroller.FindUser(aes_user.UserID, "")
 		if err != nil {
 			controllers.ErrorHandlerGin(context, http.StatusUnauthorized, err.Error(), "AuthenticateGin | find user")
 			defer context.AbortWithStatus(http.StatusUnauthorized)
@@ -53,30 +53,26 @@ func AuthenticateGin() gin.HandlerFunc {
 
 func AuthenticateFiber() fiber.Handler {
 	return func(context *fiber.Ctx) error {
-		tokenHeader := context.Get("Authorization")
+		token_header := context.Get("Authorization")
 
-		if tokenHeader == "" {
-			controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, "Unauthorized.", "AuthenticateFiber | validate api header")
-			return context.SendStatus(http.StatusUnauthorized)
+		if token_header == "" {
+			return controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, "Unauthorized.", "AuthenticateFiber | validate api header")
 		}
 
-		if !strings.Contains(tokenHeader, "Bearer") {
-			controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, "Please use Authorization Bearer.", "AuthenticateFiber | validate api header")
-			return context.SendStatus(http.StatusUnauthorized)
+		if !strings.Contains(token_header, "Bearer") {
+			return controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, "Please use Authorization Bearer.", "AuthenticateFiber | validate api header")
 		}
 
-		accessToken := strings.TrimSpace(strings.Replace(tokenHeader, "Bearer", "", 1))
+		access_token := strings.TrimSpace(strings.Replace(token_header, "Bearer", "", 1))
 
-		aesUser, err := services.AESDecrypted(accessToken)
+		aes_user, err := services.AESDecrypted(access_token)
 		if err != nil {
-			controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, err.Error(), "AuthenticateFiber | decrypt token")
-			return context.SendStatus(http.StatusUnauthorized)
+			return controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, err.Error(), "AuthenticateFiber | decrypt token")
 		}
 
-		user, err := testcontroller.FindUserByID(aesUser.UserID)
+		user, err := testcontroller.FindUser(aes_user.UserID, "")
 		if err != nil {
-			controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, err.Error(), "AuthenticateFiber | find user")
-			return context.SendStatus(http.StatusUnauthorized)
+			return controllers.ErrorHandlerFiber(context, http.StatusUnauthorized, err.Error(), "AuthenticateFiber | find user")
 		}
 		// TODO: hide password => if connect DB query to omit it
 		user.Password = ""
