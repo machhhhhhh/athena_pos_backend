@@ -43,7 +43,6 @@ func SetupSocket(socket_port string) {
 
 	// Handle shutdown signals
 	handleShutdown(server, io)
-
 }
 
 func handleShutdown(server *http.Server, io *socket.Server) {

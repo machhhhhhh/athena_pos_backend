@@ -11,41 +11,51 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetBodyGin(context *gin.Context) (LoginRequest, error, int) {
-	var body LoginRequest
+// func GetBodyGin(context *gin.Context,body LoginRequest) (LoginRequest, error, int) {
+// 	context_body := context.MustGet("body")
+// 	data, err := json.Marshal(context_body)
+// 	if err != nil {
+// 		return LoginRequest{}, errors.New("Cannot Marshal Body"), http.StatusInternalServerError
+// 	}
+// 	err = json.Unmarshal(data, &body)
+// 	if err != nil {
+// 		return LoginRequest{}, errors.New("Please input the correct_type body"), http.StatusBadRequest
+// 	}
+
+// 	// validate body
+// 	body, err = validateBody(body)
+// 	if err != nil {
+// 		return LoginRequest{}, err, http.StatusBadRequest
+// 	}
+
+// 	// body.
+// 	return body, nil, http.StatusOK
+// }
+
+func GetBodyGin[T any](context *gin.Context) (T, error, int) {
+	var body T
 	context_body := context.MustGet("body")
 	data, err := json.Marshal(context_body)
 	if err != nil {
-		return LoginRequest{}, errors.New("Cannot Marshal Body"), http.StatusInternalServerError
+		return body, errors.New("Cannot Marshal Body"), http.StatusInternalServerError
 	}
 	err = json.Unmarshal(data, &body)
 	if err != nil {
-		return LoginRequest{}, errors.New("Please input the correct_type body"), http.StatusBadRequest
+		return body, errors.New("Please input the correct_type body"), http.StatusBadRequest
 	}
 
-	// validate body
-	body, err = validateBody(body)
-	if err != nil {
-		return LoginRequest{}, err, http.StatusBadRequest
-	}
 	return body, nil, http.StatusOK
 }
-func GetBodyFiber(context *fiber.Ctx) (LoginRequest, error, int) {
-	var body LoginRequest
+func GetBodyFiber[T any](context *fiber.Ctx) (T, error, int) {
+	var body T
 	context_body := context.Locals("body")
 	data, err := json.Marshal(context_body)
 	if err != nil {
-		return LoginRequest{}, errors.New("Cannot Marshal Body"), http.StatusInternalServerError
+		return body, errors.New("Cannot Marshal Body"), http.StatusInternalServerError
 	}
 	err = json.Unmarshal(data, &body)
 	if err != nil {
-		return LoginRequest{}, errors.New("Please input the correct_type body"), http.StatusBadRequest
-	}
-
-	// validate body
-	body, err = validateBody(body)
-	if err != nil {
-		return LoginRequest{}, err, http.StatusBadRequest
+		return body, errors.New("Please input the correct_type body"), http.StatusBadRequest
 	}
 
 	return body, nil, http.StatusOK
