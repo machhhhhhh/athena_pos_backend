@@ -179,9 +179,16 @@ func GetPayloadLoginGin(context *gin.Context) {
 func LoginGin(context *gin.Context) {
 
 	// get body
-	body, err, status_code := GetBodyGin(context)
+	body, err, status_code := GetBodyGin[LoginRequest](context)
 	if err != nil {
-		controllers.ErrorHandlerGin(context, status_code, err.Error(), "LoginGin | get body")
+		controllers.ErrorHandlerGin(context, status_code, err.Error(), "LoginGin | validate body")
+		return
+	}
+
+	// Validate body
+	body, err = validateBody(body)
+	if err != nil {
+		controllers.ErrorHandlerGin(context, http.StatusNotFound, err.Error(), "LoginGin | validate body")
 		return
 	}
 
@@ -228,7 +235,7 @@ func LoginGin(context *gin.Context) {
 
 func LoginFiber(context *fiber.Ctx) error {
 	// get body
-	body, err, status_code := GetBodyFiber(context)
+	body, err, status_code := GetBodyFiber[LoginRequest](context)
 	if err != nil {
 		return controllers.ErrorHandlerFiber(context, status_code, err.Error(), "LoginFiber | get body")
 	}

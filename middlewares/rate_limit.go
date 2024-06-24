@@ -21,10 +21,7 @@ func RateLimiterFiber(max_requests int, duration time.Duration) fiber.Handler {
 			return context.IP()
 		},
 		LimitReached: func(context *fiber.Ctx) error {
-			return context.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error":         "Rate limit exceeded",
-				"error_section": "RateLimiter",
-			})
+			return controllers.ErrorHandlerFiber(context, http.StatusTooManyRequests, "Rate limit exceeded", "RateLimiterFiber | RateLimiter")
 		},
 	})
 }
@@ -36,7 +33,7 @@ func RateLimiterGin(max_requests int, duration time.Duration) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		// Check if the request IP address exceeds the rate limit
 		if limiter.TakeAvailable(1) < 1 {
-			controllers.ErrorHandlerGin(context, http.StatusTooManyRequests, "Rate limit exceeded", "RateLimiter")
+			controllers.ErrorHandlerGin(context, http.StatusTooManyRequests, "Rate limit exceeded", "RateLimiterGin | RateLimiter")
 			context.Abort()
 			return
 		}
